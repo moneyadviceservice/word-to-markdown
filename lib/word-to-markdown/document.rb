@@ -3,10 +3,11 @@ class WordToMarkdown
   class Document
     class NotFoundError < StandardError; end
 
-    attr_reader :path, :raw_html
+    attr_reader :path, :raw_html, :display
 
-    def initialize(path)
+    def initialize(path, options={})
       @path = File.expand_path path, Dir.pwd
+      @display = options[:display]
       raise NotFoundError, "File #{@path} does not exist" unless File.exist?(@path)
     end
 
@@ -86,9 +87,15 @@ class WordToMarkdown
       File.expand_path(dest_filename, tmpdir)
     end
 
+    def arguments
+      args = ['--headless', '--convert-to', 'html', path, '--outdir', tmpdir]
+      args << "-display #{display}" if display
+      args
+    end
+
     def raw_html
       @raw_html ||= begin
-        WordToMarkdown::run_command '--headless', '--convert-to', 'html', path, '--outdir', tmpdir
+        WordToMarkdown.run_command *arguments
         html = File.read dest_path
         File.delete dest_path
         html
