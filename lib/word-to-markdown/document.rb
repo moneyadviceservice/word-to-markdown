@@ -8,6 +8,7 @@ class WordToMarkdown
     def initialize(path, options={})
       @path = File.expand_path path, Dir.pwd
       @display = options[:display]
+      @format = options[:format]
       raise NotFoundError, "File #{@path} does not exist" unless File.exist?(@path)
     end
 
@@ -87,8 +88,12 @@ class WordToMarkdown
       File.expand_path(dest_filename, tmpdir)
     end
 
+    def format
+      @format ||= 'html'
+    end
+
     def arguments
-      args = ['--headless', '--convert-to', 'html', path, '--outdir', tmpdir]
+      args = ['--headless', '--convert-to', format, path, '--outdir', tmpdir]
       args << "-display #{display}" if display
       args
     end
